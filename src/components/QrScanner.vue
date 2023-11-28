@@ -93,9 +93,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="reader" width="600px"></div>
+  <div id="reader" class="-mx-3"></div>
 
-  <div class="bg-primary-reverse mt-4 p-3">
+  <div class=" mt-5 p-3">
     <div class="text-lg text-center">
       Il QR Code non funziona?
       <div class="p-2"></div>
@@ -130,4 +130,23 @@ onMounted(() => {
   transition:    background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
   border-radius: 6px;
 }
+
+#reader__dashboard_section_csr {
+  padding: 0 1rem ;
+
+  > span {
+    display: block;
+
+  }
+
+  > span:first-of-type {
+    margin-right: 0 !important;
+  }
+
+  #html5-qrcode-select-camera {
+    padding:       .6rem;
+    margin-bottom: 2rem;
+  }
+}
+
 </style>

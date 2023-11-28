@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import ProgressBar from 'primevue/progressbar'
 import Button from 'primevue/button'
-import { inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, ref } from 'vue'
 import useApi from '@/composables/api'
 import type { Ref } from 'vue'
 import type { DynamicDialogInstance } from 'primevue/dynamicdialogoptions'
@@ -15,6 +15,14 @@ const passData = ref('')
 const loading = ref(true)
 const checkError = ref(null)
 const checkResultData = ref(null)
+const userPass = ref<{
+  passCode: string,
+  firstName: string,
+  lastName: string,
+  email: string,
+  refUser?: any,
+  isCompanion?: boolean
+}>()
 
 async function checkPass () {
   try {
@@ -25,6 +33,30 @@ async function checkPass () {
       ...passDataJson,
       eventId: event.event._id
     })
+
+    if (checkResultData.value) {
+
+      if (passDataJson.passCode === checkResultData.value.passCode) {
+        userPass.value = {
+          passCode: checkResultData.value.passCode,
+          firstName: checkResultData.value.user.firstName,
+          lastName: checkResultData.value.user.lastName,
+          email: checkResultData.value.user.email
+        }
+      } else {
+        const companion = checkResultData.value.companions.find((companion) => companion.passCode === passDataJson.passCode)
+
+        if (companion) {
+          userPass.value = {
+            ...companion,
+            isCompanion: true,
+            refUser: checkResultData.value.user
+          }
+        }
+      }
+
+    }
+
   } catch (er: any) {
     if (er instanceof AxiosError) {
       checkError.value = er.response?.data?.error ?? er.response?.data?.message
@@ -62,20 +94,18 @@ onMounted(() => {
     <div class="text-xl text-center">Controllo pass riuscito!!</div>
   </div>
 
-  <div class="text-lg mb-0" v-if="checkResultData">
-    Il pass è registrato a nome di:
+  <div class="text-lg text-center mb-3" v-if="checkResultData">
+    <div class="">
+      <div>Utente</div>
+      <strong>{{ userPass.firstName }} {{ userPass.lastName }}</strong>
+    </div>
 
-    <ul>
-      <li>{{ checkResultData.user.firstName }} {{ checkResultData.user.lastName }}</li>
-    </ul>
-
-    Sono registrati: <strong>{{ checkResultData.companions.length }} accompagnatore/i</strong>:
-
-    <ul>
-      <li v-for="(companion, i) in checkResultData.companions" :key="i">
-        {{ companion.firstName }} {{ companion.lastName }}
-      </li>
-    </ul>
+    <div class="mt-3" v-if="userPass.isCompanion">
+      <div>Accompagnatore di</div>
+      <strong>{{ userPass.refUser.firstName }} {{
+          userPass.refUser.lastName
+        }}</strong>
+    </div>
   </div>
 
   <Button class="w-full justify-content-center mt-4" v-if="!loading" @click="closeDialog">Ok</Button>
